@@ -1,0 +1,16 @@
+.notification-btn {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.notification-btn:hover {
+  background: rgba(170, 170, 170, 0.062);
+  transition: 0.5s;
+}
+
+.notification-btn svg {
+  color: #fff;
+}
