@@ -151,7 +151,6 @@ button {
   display: grid;
 }
 .main {
-  overflow: hidden; /*For animation*/
   padding-top: 90px;
 }
 /* HEADER */

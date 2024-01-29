@@ -23,10 +23,6 @@ export const publicRoutes: RouteObject[] = [
         path: "/message",
         element: <MessageSection />,
       },
-      {
-        path: "/signin",
-        element: <div>signin</div>,
-      },
     ],
   },
 ];

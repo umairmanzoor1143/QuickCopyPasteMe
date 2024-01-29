@@ -1,28 +1,100 @@
 import { useEffect, useState } from "react";
 import "./style.scss";
 import useSocket from "hooks/useSocket";
+import { ConnectionEvents } from "constant";
+import Messages from "../Message";
+import useConnect from "hooks/useHandShake";
 type Props = {};
+const CodeTimer = ({
+  token,
+  callBack,
+}: {
+  token: {
+    token: string;
+    lifetime: number;
+    isValid: boolean;
+  };
+  callBack: () => void;
+}) => {
+  const [timeLeft, setTimeLeft] = useState(120000);
+  useEffect(() => {
+    setTimeLeft(() => token.lifetime);
+  }, [token, token.token]);
+  useEffect(() => {
+    if (!timeLeft) {
+      callBack();
+      return;
+    }
+    const intervalId = setInterval(() => {
+      setTimeLeft(timeLeft - 1000);
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [timeLeft]);
 
-const Home = (props: Props) => {
+  const minutes = Math.floor(timeLeft / 60000);
+  const seconds = ((timeLeft % 60000) / 1000).toFixed(0);
+
+  return (
+    <span>
+      valid for {minutes ? `${minutes} min` : ""} {seconds.padStart(2, "0")}{" "}
+      secs
+    </span>
+  );
+};
+const GenerateCode = () => {
   const { socket } = useSocket();
+  const { setRoom } = useConnect();
+  const [isConnected, setIsConnected] = useState<{
+    confirmed: boolean;
+    room: string;
+  }>({
+    confirmed: false,
+    room: "",
+  });
   const [center, setCenter] = useState<number>(0);
-
+  const [ValidCode, setValidCode] = useState<{
+    token: string;
+    lifetime: number;
+    isValid: boolean;
+  }>({
+    token: "",
+    lifetime: 0,
+    isValid: false,
+  });
+  const handleGetCreateCode = () => {
+    socket?.emit(ConnectionEvents.REQUEST_MANUALCODE);
+  };
+  const handleCreateNewCode = () => {
+    socket?.on(ConnectionEvents.UPDATE_MANUALCODE, (pr) => {
+      setValidCode(() => pr);
+    });
+  };
+  const handleConfirmCode = () => {
+    socket?.on(
+      ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED,
+      (d: RoomType) => {
+        if (d.confirmed) setRoom?.(d);
+      }
+    );
+  };
   useEffect(() => {
     if (document.body) {
       setCenter((document.body.clientHeight || 0) / 4);
     }
-    socket?.on("get-new-code", (pr) => {
-      console.log("getNewCode", pr);
-    });
-
-    // return () => {
-    //   socket?.off("get-new-code");
-    // };
+    if (socket) {
+      handleGetCreateCode();
+      handleCreateNewCode();
+      handleConfirmCode();
+    }
+    return () => {
+      socket?.off(ConnectionEvents.REQUEST_MANUALCODE);
+      socket?.off(ConnectionEvents.UPDATE_MANUALCODE);
+      socket?.off(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED);
+    };
   }, []);
   return (
     <div className='e-card playing' style={{ margin: `${center - 80}px auto` }}>
       <div className='image'></div>
-
       <div className='wave'></div>
       <div className='wave'></div>
       <div className='wave'></div>
@@ -67,16 +139,32 @@ const Home = (props: Props) => {
           </span>{" "}
           <br />
           <span>and enter the following code:</span> <br />
-          <div className='pin-numbers'>
-            {"EGHYNB".split("").map((ele) => (
-              <p className='pin-box'>{ele}</p>
-            ))}
-          </div>{" "}
-          <br />
-          <span>(valid for 1 min 18 secs)</span>
+          {ValidCode?.token && (
+            <>
+              <div className='pin-numbers'>
+                {ValidCode?.token?.split("")?.map((ele) => (
+                  <p className='pin-box'>{ele}</p>
+                ))}
+              </div>{" "}
+              <br />
+              <CodeTimer
+                token={ValidCode}
+                callBack={() => {
+                  handleCreateNewCode();
+                  // getNewCode();
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>
+  );
+};
+const Home = (props: Props) => {
+  const { room } = useConnect();
+  return (
+    <>{room?.confirmed ? <Messages roomId={room?.room} /> : <GenerateCode />}</>
   );
 };
 

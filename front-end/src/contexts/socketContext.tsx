@@ -10,20 +10,26 @@ export const WebSocketContext = createContext<ISocket>({});
 
 const WebSocketProvider: React.FC<{ children?: ReactNode }> = (props) => {
   const [socket, setSocket] = useState<Socket | undefined>(undefined);
-
+  const initializeSocket = () => {
+    const newSocket = io(API_URL, { withCredentials: false });
+    newSocket.on("connect", () => {
+      console.log("connection established", newSocket.connected); // true
+    });
+    setSocket(newSocket);
+    return newSocket;
+  };
   useEffect(() => {
-    let s: Socket | undefined;
     if (!socket) {
-      s = io(SOCKET_URL, {
-        withCredentials: false,
-      });
-
-      s.on("connect", () => {
-        console.log("connection established", s?.connected); // true
-      });
-      setSocket(s);
-    } 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      const newSocket = initializeSocket();
+      return () => {
+        newSocket.disconnect();
+      };
+    }
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
   }, []);
 
   return (

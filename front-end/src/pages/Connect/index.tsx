@@ -1,15 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../Home/style.scss";
 import "./style.scss";
 import PinInput from "react-pin-input";
 import classNames from "classnames";
+import useSocket from "hooks/useSocket";
+import { ConnectionEvents } from "constant";
+import { useNavigate } from "react-router-dom";
+import React from "react";
+import useConnect from "hooks/useHandShake";
+
 type Props = {};
 
 const Connect = (props: Props) => {
+  const { socket } = useSocket();
+  const { setRoom } = useConnect();
+  const navigate = useNavigate();
   const [val, setVal] = useState<any>(0);
-  console.log({ val });
+
+  const requestForConformation = () => {
+    socket?.emit(ConnectionEvents.REQUEST_MANUALCODE_CONFIRMATION, val);
+    socket?.on(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED, (d) => {
+      if (d.confirmed) {
+        setRoom?.(d);
+        navigate("/");
+      }
+    });
+  };
+  useEffect(() => {
+    return () => {
+      socket?.off(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED);
+    };
+  }, []);
   return (
-    <>
+    <React.Fragment>
       <div className='e-card playing'>
         <div className='image'></div>
         <div className='wave'></div>
@@ -58,12 +81,20 @@ const Connect = (props: Props) => {
           </div>
         </div>
       </div>
-      <div className="btn-ctn">
-        <button className={classNames('connect-btn',{ isActive: val.length === 6 })} id='btn'>
+      <div className='btn-ctn'>
+        <button
+          className={classNames("connect-btn", { isActive: val.length === 6 })}
+          id='btn'
+          onClick={() => {
+            if (socket && val.length === 6) {
+              requestForConformation();
+            }
+          }}
+        >
           Connect
         </button>
       </div>
-    </>
+    </React.Fragment>
   );
 };
 
