@@ -131,11 +131,11 @@ const GenerateCode = () => {
         <div className='name'>
           <span
             onClick={() => {
-              window.open("https://copypaste.me/connect", "_blank");
+              window.open("http://localhost:3000/connect", "_blank");
             }}
             className='connect-link'
           >
-            https://copypaste.me/connect
+            http://localhost:3000/connect
           </span>{" "}
           <br />
           <span>and enter the following code:</span> <br />

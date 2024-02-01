@@ -1,4 +1,3 @@
-import { TYPES as ConnectionTypes } from "constant";
 const generateUniqueId = require("generate-unique-id");
 const generatePassword = require("generate-password");
 

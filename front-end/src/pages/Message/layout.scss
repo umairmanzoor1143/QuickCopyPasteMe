@@ -21,7 +21,11 @@
   flex: 1;
 }
 .tabs-editor {
-  // height: 47px;
+  flex: 0;
+  position: fixed;
+  width: 50%;
+  z-index: 9999999999;
+  background: white;
 }
 .code-svg {
   font-size: 16px;
@@ -39,16 +43,33 @@
   background: rgba(170, 170, 170, 0.062);
   transition: 0.5s;
 }
-.app_customscrollbar > div:nth-child(2) {
+.editor-custom-scroll > div:nth-child(2) {
+  flex: 1;
+  margin-top: 47px;
+  .tiptap {
+    height: 100%;
+  }
+}
+.app_customscrollbar > div:first-child {
   flex: 1;
   .tiptap {
     height: 100%;
   }
 }
-.app_customscrollbar {
-  height: calc(100vh - 140px);
+.editor-custom-scroll {
+  height: 100%;
   display: flex;
   flex-direction: column;
+}
+.message-box {
+  background: blueviolet;
+  padding: 15px;
+  border-radius: 15px 15px 0px 15px;
+  width: 90%;
+  margin: 10px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 .tiptap {
   // margin-top: 50px;

@@ -1,18 +1,21 @@
 import React from "react";
 import { EditorContent, useEditor, EditorProviderProps } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-
+type EditorContentProps = EditorProviderProps & {
+  setContent: (e: string) => void;
+};
 const MyEditorProvider = ({
   slotBefore,
   slotAfter,
   content = "",
+  setContent,
   ...rest
-}: EditorProviderProps) => {
+}: EditorContentProps) => {
   const editor = useEditor({
     extensions: [StarterKit],
     content: content,
     onUpdate: ({ editor }) => {
-      // This will run whenever the content changes
+      setContent(`${editor.getHTML()}`);
       console.log(editor.getHTML());
     },
   });
@@ -23,7 +26,9 @@ const MyEditorProvider = ({
 
   return (
     <>
-      {slotBefore}
+      {React.cloneElement(slotBefore as any, {
+        editor,
+      })}
       <EditorContent editor={editor} />
       {slotAfter}
     </>

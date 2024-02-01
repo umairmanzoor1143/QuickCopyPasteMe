@@ -2,9 +2,11 @@
   .thumb-vertical {
     z-index: 9999999999;
   }
-  
+  .home-scroll {
+  height: 100%;
 }
-.home-custom-scroll > div:nth-child(1){
-    margin-bottom: -19px
+}
+.home-custom-scroll > div:nth-child(1) {
+  margin-bottom: -19px;
+}
 
-}

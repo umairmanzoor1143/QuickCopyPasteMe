@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React, { ReactElement, forwardRef, useEffect, useRef } from "react";
 import { ScrollbarProps, Scrollbars } from "react-custom-scrollbars-2";
 import Measure from "react-measure";
@@ -5,9 +6,13 @@ import { useLocation } from "react-router-dom";
 
 interface Props extends ScrollbarProps {
   children?: React.ReactNode;
+  ctnClass?: string;
 }
 
-function Scrollbar({ children, ...rest }: Props, ref: any): ReactElement {
+function Scrollbar(
+  { children, ctnClass = "", ...rest }: Props,
+  ref: any
+): ReactElement {
   const scrollRef = useRef<any>();
 
   const location = useLocation();
@@ -52,7 +57,12 @@ function Scrollbar({ children, ...rest }: Props, ref: any): ReactElement {
         }}
       >
         {({ measureRef }) => (
-          <div ref={measureRef} className='rc-scollbar app_customscrollbar'>
+          <div
+            ref={measureRef}
+            className={classNames("rc-scollbar app_customscrollbar", {
+              [ctnClass]: !!ctnClass,
+            })}
+          >
             {children}
           </div>
         )}

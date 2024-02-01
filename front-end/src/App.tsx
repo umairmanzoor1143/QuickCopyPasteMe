@@ -5,7 +5,7 @@ import 'style.scss'
 function App() {
   return (
     <>
-      <Scrollbar className='home-custom-scroll'>
+      <Scrollbar className='home-custom-scroll' ctnClass="home-scroll">
       <Header />
         <main className='main h-100'>
           <section className='home h-100' id='home'>

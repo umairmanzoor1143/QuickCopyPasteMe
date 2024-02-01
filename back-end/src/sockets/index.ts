@@ -1,6 +1,5 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { Server as HTTPServer } from "http";
-import { generateRandomString } from "../utils/generateRandomString"; // Assuming this utility function exists
 import { ConnectionEvents } from "../constant";
 import createToken from "../utils/Token";
 export const initSocket = (server: HTTPServer) => {
@@ -48,9 +47,9 @@ export const initSocket = (server: HTTPServer) => {
           // Emit an event to both sockets confirming the connection
           io.to(room).emit(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED, {
             confirmed: true,
-            room: room,
+            room: conformCode,
           });
-          delete codes[conformCode];
+          // delete codes[conformCode];
         } else {
           socket.emit(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED, {
             confirmed: false,
@@ -58,9 +57,9 @@ export const initSocket = (server: HTTPServer) => {
         }
       }
     );
-    socket.on("send_message", (data) => {
+    socket.on(ConnectionEvents.SEND_DATA, (data) => {
       const room = `room-${data.roomId}`;
-      io.to(room).emit("receive_message", {
+      io.to(room).emit(ConnectionEvents.RECEIVE_DATA, {
         sender: socket.id,
         message: data.message,
       });
