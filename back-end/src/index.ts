@@ -1,9 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { Server as SocketIOServer, Socket } from "socket.io";
 import { createServer } from "http";
-import { generateRandomString } from "./utils/generateRandomString";
 import { initSocket } from "./sockets/index";
 const app: Express = express();
 dotenv.config();

@@ -44,13 +44,6 @@ const CodeTimer = ({
 const GenerateCode = () => {
   const { socket } = useSocket();
   const { setRoom } = useConnect();
-  const [isConnected, setIsConnected] = useState<{
-    confirmed: boolean;
-    room: string;
-  }>({
-    confirmed: false,
-    room: "",
-  });
   const [center, setCenter] = useState<number>(0);
   const [ValidCode, setValidCode] = useState<{
     token: string;
