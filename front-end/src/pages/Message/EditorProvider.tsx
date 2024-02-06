@@ -1,6 +1,7 @@
 import React from "react";
 import { EditorContent, useEditor, EditorProviderProps } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Scrollbar from "components/Scrollbar";
 type EditorContentProps = EditorProviderProps & {
   setContent: (e: string) => void;
 };
@@ -29,8 +30,12 @@ const MyEditorProvider = ({
       {React.cloneElement(slotBefore as any, {
         editor,
       })}
-      <EditorContent editor={editor} />
-      {slotAfter}
+      <Scrollbar ctnClass='editor-custom-scroll'>
+        <EditorContent editor={editor} />
+      </Scrollbar>
+      {React.cloneElement(slotAfter as any, {
+        editor,
+      })}
     </>
   );
 };

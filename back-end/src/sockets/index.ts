@@ -1,7 +1,20 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { Server as HTTPServer } from "http";
 import { ConnectionEvents } from "../constant";
+
 import createToken from "../utils/Token";
+type TokenType = {
+  clientOneId: string;
+  clientTwoId: string;
+  isValid: string;
+  pairId: string;
+};
+type ClientDeviceType = {
+  code: string;
+  room: string;
+  deviceId: string;
+};
+
 export const initSocket = (server: HTTPServer) => {
   const io = new SocketIOServer(server, {
     cors: {
@@ -9,16 +22,19 @@ export const initSocket = (server: HTTPServer) => {
     },
   });
 
-  let codes: any = {};
+  let codes: { [key: string]: TokenType } = {};
+  let sockets: { [key: string]: ClientDeviceType } = {};
 
   io.on("connection", (socket: Socket) => {
+    console.log({ socket: socket.id });
     // Generate 6 digit code REQUEST_MANUALCODE
     socket.on(ConnectionEvents.REQUEST_MANUALCODE, () => {
       const token = createToken();
       const code = token.getValue();
       // Store the code and socket id
       codes[code] = {
-        id: socket.id,
+        clientOneId: socket.id,
+        clientTwoId: "",
         isValid: token.expires(),
         pairId: token.pairId(),
       };
@@ -34,22 +50,35 @@ export const initSocket = (server: HTTPServer) => {
     // Request confirmation of the manual code
     socket.on(
       ConnectionEvents.REQUEST_MANUALCODE_CONFIRMATION,
-      (conformCode) => {
+      (conformCode: string) => {
+        const isValidTimestamp = Number(codes[conformCode].isValid);
         if (
           codes[conformCode] &&
-          codes[conformCode].isValid >= new Date().getTime()
+          !isNaN(isValidTimestamp) &&
+          isValidTimestamp >= new Date().getTime()
         ) {
-          const socketId = codes[conformCode].id;
+          const socketId = codes[conformCode].clientOneId;
           const room = `room-${conformCode}`;
           const currentSocket = io.sockets.sockets.get(socketId);
           currentSocket?.join(room);
           socket.join(room);
+          (socket as any).device = {
+            code: conformCode,
+            room,
+            deviceId: currentSocket.id,
+          };
+          (currentSocket as any).device = {
+            code: conformCode,
+            room,
+            deviceId: socket.id,
+          };
+          codes[conformCode].clientTwoId = socket.id;
           // Emit an event to both sockets confirming the connection
           io.to(room).emit(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED, {
             confirmed: true,
             room: conformCode,
           });
-          // delete codes[conformCode];
+          delete codes[conformCode];
         } else {
           socket.emit(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED, {
             confirmed: false,
@@ -63,6 +92,21 @@ export const initSocket = (server: HTTPServer) => {
         sender: socket.id,
         message: data.message,
       });
+    });
+    socket.on("disconnect", () => {
+      const client = (socket as any)?.device;
+      if (client?.deviceId) {
+        const currentSocket = io.sockets.sockets.get(client.deviceId);
+        io.to(client?.room).emit(
+          ConnectionEvents.UPDATE_OTHERDEVICE_DISCONNECTED,
+          {
+            isDisconnect: true,
+            socketId: socket.id,
+          }
+        );
+        (socket as any).device = null;
+        (currentSocket as any).device = null;
+      }
     });
   });
 };

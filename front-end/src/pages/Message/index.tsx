@@ -13,6 +13,8 @@ import Scrollbar from "components/Scrollbar";
 import useSocket from "hooks/useSocket";
 import MyEditorProvider from "./EditorProvider";
 import { ConnectionEvents } from "constant";
+import Warning from "components/Warning";
+import useConnect from "hooks/useHandShake";
 type Props = {
   roomId: string;
 };
@@ -21,7 +23,8 @@ const MessageSection = ({ roomId }: Props) => {
   const [content, setContent] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
   const { socket } = useSocket();
-  console.log({ messages });
+  const { isDisconnect } = useConnect();
+
   useEffect(() => {
     if (socket) {
       socket?.on(
@@ -54,38 +57,48 @@ const MessageSection = ({ roomId }: Props) => {
       </div>
     );
   };
-  return (
-    <div className='h-100'>
-      <div className='h-100 two-panel-layout'>
-        <div className='left-side'>
-          <div className='text-area-editor'>
-            <Scrollbar ctnClass='editor-custom-scroll'>
-              <MyEditorProvider
-                slotBefore={<MenuBar />}
-                setContent={setContent}
-                content={content}
-              >
-                <></>
-              </MyEditorProvider>
-            </Scrollbar>
-          </div>
-          <div className='footer'>
-            <button
-              className={classNames("code-svg")}
-              onClick={() => {
+  const SlotBefore = ({ editor }: { editor?: Editor }) => {
+    return (
+      <div className='footer'>
+        {isDisconnect ? (
+          <Warning />
+        ) : (
+          <button
+            className={classNames("code-svg")}
+            onClick={() => {
+              if (!!content) {
                 socket?.emit(ConnectionEvents.SEND_DATA, {
                   roomId,
                   message: content,
                 });
                 setContent("");
-              }}
-            >
-              Send
-            </button>
+                editor?.commands.clearContent();
+              }
+            }}
+          >
+            Send
+          </button>
+        )}
+      </div>
+    );
+  };
+  return (
+    <div className='h-100'>
+      <div className='h-100 two-panel-layout'>
+        <div className='left-side'>
+          <div className='text-area-editor'>
+              <MyEditorProvider
+                slotBefore={<MenuBar />}
+                setContent={setContent}
+                content={content}
+                slotAfter={<SlotBefore />}
+              >
+                <></>
+              </MyEditorProvider>
           </div>
         </div>
         <div className='right-side'>
-          <Scrollbar className='editor-custom-scroll'>
+          <Scrollbar>
             {messages.map((ele, i) => {
               return (
                 <div

@@ -21,6 +21,7 @@ const CodeTimer = ({
     setTimeLeft(() => token.lifetime);
   }, [token, token.token]);
   useEffect(() => {
+    console.log({ timeLeft });
     if (!timeLeft) {
       callBack();
       return;
@@ -59,6 +60,7 @@ const GenerateCode = () => {
   };
   const handleCreateNewCode = () => {
     socket?.on(ConnectionEvents.UPDATE_MANUALCODE, (pr) => {
+      console.log({ pr });
       setValidCode(() => pr);
     });
   };
@@ -71,16 +73,15 @@ const GenerateCode = () => {
     );
   };
   useEffect(() => {
-    if (document.body) {
-      setCenter((document.body.clientHeight || 0) / 4);
-    }
     if (socket) {
       handleGetCreateCode();
       handleCreateNewCode();
       handleConfirmCode();
     }
+    if (document.body) {
+      setCenter((document.body.clientHeight || 0) / 4);
+    }
     return () => {
-      socket?.off(ConnectionEvents.REQUEST_MANUALCODE);
       socket?.off(ConnectionEvents.UPDATE_MANUALCODE);
       socket?.off(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED);
     };
@@ -124,11 +125,14 @@ const GenerateCode = () => {
         <div className='name'>
           <span
             onClick={() => {
-              window.open("http://localhost:3000/connect", "_blank");
+              window.open(
+                `${process.env.REACT_APP_LOCAL_URL}/connect`,
+                "_blank"
+              );
             }}
             className='connect-link'
           >
-            http://localhost:3000/connect
+            {process.env.REACT_APP_LOCAL_URL}/connect
           </span>{" "}
           <br />
           <span>and enter the following code:</span> <br />
@@ -143,7 +147,7 @@ const GenerateCode = () => {
               <CodeTimer
                 token={ValidCode}
                 callBack={() => {
-                  handleCreateNewCode();
+                  handleGetCreateCode();
                   // getNewCode();
                 }}
               />
@@ -155,7 +159,18 @@ const GenerateCode = () => {
   );
 };
 const Home = (props: Props) => {
-  const { room } = useConnect();
+  const { socket } = useSocket();
+  const { room, setIsDisconnect } = useConnect();
+  useEffect(() => {
+    socket?.on(
+      ConnectionEvents.UPDATE_OTHERDEVICE_DISCONNECTED,
+      (isDisconnect: { isDisconnect: boolean }) => {
+        if (isDisconnect) {
+          setIsDisconnect?.(!!isDisconnect);
+        }
+      }
+    );
+  }, []);
   return (
     <>{room?.confirmed ? <Messages roomId={room?.room} /> : <GenerateCode />}</>
   );
