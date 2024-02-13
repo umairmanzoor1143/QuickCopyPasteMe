@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./layout.scss";
-import {
-  Editor,
-  EditorOptions,
-  EditorProvider,
-  EditorProviderProps,
-  useCurrentEditor,
-} from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { Editor } from "@tiptap/react";
 import classNames from "classnames";
 import Scrollbar from "components/Scrollbar";
 import useSocket from "hooks/useSocket";
@@ -15,22 +8,29 @@ import MyEditorProvider from "./EditorProvider";
 import { ConnectionEvents } from "constant";
 import Warning from "components/Warning";
 import useConnect from "hooks/useHandShake";
+import { v4 } from "uuid";
 type Props = {
   roomId: string;
 };
-const MessageBox = ({ htmlString }: { htmlString: string }) => {
-  const copyText = () => {
+const MessageBox = ({ htmlString, id }: { htmlString: string; id: string }) => {
+  const [isCopy, setIsCopy] = useState(false);
+  const copyText = (messageId: string) => {
     const doc = new DOMParser().parseFromString(htmlString, "text/html");
     const text = doc.body.textContent || "";
     navigator.clipboard
       .writeText(text)
       .then(() => {
         console.log("Text copied to clipboard");
+        setIsCopy(id === messageId);
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
       });
   };
+  useEffect(() => {
+    const duration = 3500;
+    setTimeout(() => setIsCopy(false), duration);
+  }, [isCopy]);
 
   return (
     <div className='tiptap'>
@@ -38,23 +38,41 @@ const MessageBox = ({ htmlString }: { htmlString: string }) => {
         className='message-box'
         dangerouslySetInnerHTML={{ __html: htmlString }}
       ></div>
-      <button onClick={copyText} className='copy-svg'>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          width='14'
-          height='14'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          stroke-width='2'
-          stroke-linecap='round'
-          stroke-linejoin='round'
-          className='feather feather-copy'
-        >
-          <rect x='9' y='9' width='13' height='13' rx='2' ry='2'></rect>
-          <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'></path>
-        </svg>
-      </button>
+      {!isCopy ? (
+        <>
+          <button onClick={() => copyText(id)} className='copy-svg'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='14'
+              height='14'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              stroke-width='2'
+              stroke-linecap='round'
+              stroke-linejoin='round'
+              className='feather feather-copy'
+            >
+              <rect x='9' y='9' width='13' height='13' rx='2' ry='2'></rect>
+              <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'></path>
+            </svg>
+          </button>
+        </>
+      ) : (
+        <button className='copy-svg'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            width='14'
+            height='14'
+          >
+            <path
+              fill='green'
+              d='M10.3 15.4l-4.1-4.2L5 12.7l5.3 5.3 8.3-8.2-1.2-1.3z'
+            />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };
@@ -139,7 +157,8 @@ const MessageSection = ({ roomId }: Props) => {
         <div className='right-side'>
           <Scrollbar>
             {messages.map((ele, i) => {
-              return <MessageBox htmlString={ele} key={ele.slice(0, 10) + i} />;
+              const id = v4();
+              return <MessageBox htmlString={ele} id={id} key={id} />;
             })}
           </Scrollbar>
         </div>
