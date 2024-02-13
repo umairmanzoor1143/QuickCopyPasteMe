@@ -18,7 +18,46 @@ import useConnect from "hooks/useHandShake";
 type Props = {
   roomId: string;
 };
+const MessageBox = ({ htmlString }: { htmlString: string }) => {
+  const copyText = () => {
+    const doc = new DOMParser().parseFromString(htmlString, "text/html");
+    const text = doc.body.textContent || "";
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        console.log("Text copied to clipboard");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
+  };
 
+  return (
+    <div className='tiptap'>
+      <div
+        className='message-box'
+        dangerouslySetInnerHTML={{ __html: htmlString }}
+      ></div>
+      <button onClick={copyText} className='copy-svg'>
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          width='14'
+          height='14'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          stroke-width='2'
+          stroke-linecap='round'
+          stroke-linejoin='round'
+          className='feather feather-copy'
+        >
+          <rect x='9' y='9' width='13' height='13' rx='2' ry='2'></rect>
+          <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'></path>
+        </svg>
+      </button>
+    </div>
+  );
+};
 const MessageSection = ({ roomId }: Props) => {
   const [content, setContent] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
@@ -87,26 +126,20 @@ const MessageSection = ({ roomId }: Props) => {
       <div className='h-100 two-panel-layout'>
         <div className='left-side'>
           <div className='text-area-editor'>
-              <MyEditorProvider
-                slotBefore={<MenuBar />}
-                setContent={setContent}
-                content={content}
-                slotAfter={<SlotBefore />}
-              >
-                <></>
-              </MyEditorProvider>
+            <MyEditorProvider
+              slotBefore={<MenuBar />}
+              setContent={setContent}
+              content={content}
+              slotAfter={<SlotBefore />}
+            >
+              <></>
+            </MyEditorProvider>
           </div>
         </div>
         <div className='right-side'>
           <Scrollbar>
             {messages.map((ele, i) => {
-              return (
-                <div
-                  className='message-box tiptap'
-                  key={ele.slice(0, 10) + i}
-                  dangerouslySetInnerHTML={{ __html: ele }}
-                ></div>
-              );
+              return <MessageBox htmlString={ele} key={ele.slice(0, 10) + i} />;
             })}
           </Scrollbar>
         </div>

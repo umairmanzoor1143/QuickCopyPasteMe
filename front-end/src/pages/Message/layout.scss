@@ -53,7 +53,7 @@
 
 .editor-custom-scroll > div:first-child {
   flex: 1;
-   margin-top: 47px;
+  margin-top: 47px;
   .tiptap {
     height: 100%;
   }
@@ -75,6 +75,14 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
+}
+.copy-svg {
+  margin: 9px !important;
+  background-color: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 90%;
 }
 .tiptap {
   // margin-top: 50px;
