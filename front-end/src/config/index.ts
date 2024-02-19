@@ -1,1 +1,1 @@
-export const API_URL = "ws://localhost:5000";
+export const API_URL = process.env.REACT_APP_SOCKET_API_URL;

@@ -1,5 +1,4 @@
 import { API_URL } from "config";
-import useConnect from "hooks/useHandShake";
 import React, { createContext, ReactNode, useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
 const SOCKET_URL = `${API_URL}`;
@@ -10,10 +9,9 @@ export interface ISocket {
 export const WebSocketContext = createContext<ISocket>({});
 
 const WebSocketProvider: React.FC<{ children?: ReactNode }> = (props) => {
-  const { room } = useConnect();
   const [socket, setSocket] = useState<Socket | undefined>(undefined);
   const initializeSocket = () => {
-    const newSocket = io(API_URL, { withCredentials: false });
+    const newSocket = io(SOCKET_URL, { withCredentials: false });
     newSocket.on("connect", () => {
       console.log("connection established", newSocket.connected); // true
     });
