@@ -7,8 +7,7 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "vercel-build": "echo hello"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "Umair",
