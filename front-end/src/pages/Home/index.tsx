@@ -126,7 +126,7 @@ const GenerateCode = () => {
           <span
             onClick={() => {
               window.open(
-                `${process.env.REACT_APP_LOCAL_URL}/connect`,
+                `${process.env.REACT_APP_LOCAL_URL}connect`,
                 "_blank"
               );
             }}
