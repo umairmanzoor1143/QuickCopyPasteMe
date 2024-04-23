@@ -1,22 +1,19 @@
 const express = require("express")
+const dotenv = require("dotenv")
+const cors = require("cors")
+const http = require("http")
+const { initSocket } = require("./sockets")
 const app = express()
-require("dotenv").config()
-require("./db")
-const PORT = process.env.PORT || 8080
-const userRoutes = require("./routes/userRoutes")
-app.use(express.json())
+dotenv.config()
+app.use(cors())
+const port = process.env.PORT || 8000
+const server = http.createServer(app)
+initSocket(server)
 
 app.get("/", (req, res) => {
-  res.send("products api running new deploy")
+  res.send("Express + TypeScript Serversdf 10")
 })
 
-app.get("/ping", (req, res) => {
-  res.send("PONG")
-})
-
-// /users
-app.use("/users", userRoutes)
-
-app.listen(8080, () => {
-  console.log("Server is listenin on PORT :" + PORT)
+server.listen(port, () => {
+  console.log(`[server]: Server is running at http://localhost:${port}`)
 })
