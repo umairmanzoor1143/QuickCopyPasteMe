@@ -16,7 +16,7 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log({ socket: socket.id })
     socket.on(ConnectionEvents.REQUEST_MANUALCODE, () => {
-      let token = createToken()
+      let token = createToken.createToken()
       let code = token.getValue()
       codes[code] = {
         clientOneId: socket.id,
