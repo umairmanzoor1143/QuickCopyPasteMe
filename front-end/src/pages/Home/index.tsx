@@ -1,108 +1,108 @@
-import { useEffect, useState } from "react";
-import "./style.scss";
-import useSocket from "hooks/useSocket";
-import { ConnectionEvents } from "constant";
-import Messages from "../Message";
-import useConnect from "hooks/useHandShake";
-type Props = {};
+import { useEffect, useState } from "react"
+import "./style.scss"
+import useSocket from "hooks/useSocket"
+import { ConnectionEvents } from "constant"
+import Messages from "../Message"
+import useConnect from "hooks/useHandShake"
+type Props = {}
 const CodeTimer = ({
   token,
   callBack,
 }: {
   token: {
-    token: string;
-    lifetime: number;
-    isValid: boolean;
-  };
-  callBack: () => void;
+    token: string
+    lifetime: number
+    isValid: boolean
+  }
+  callBack: () => void
 }) => {
-  const [timeLeft, setTimeLeft] = useState(120000);
+  const [timeLeft, setTimeLeft] = useState(120000)
   useEffect(() => {
-    setTimeLeft(() => token.lifetime);
-  }, [token, token.token]);
+    setTimeLeft(() => token.lifetime)
+  }, [token, token.token])
   useEffect(() => {
-    console.log({ timeLeft });
+    console.log({ timeLeft })
     if (!timeLeft) {
-      callBack();
-      return;
+      callBack()
+      return
     }
     const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1000);
-    }, 1000);
-    return () => clearInterval(intervalId);
-  }, [timeLeft]);
+      setTimeLeft(timeLeft - 1000)
+    }, 1000)
+    return () => clearInterval(intervalId)
+  }, [timeLeft])
 
-  const minutes = Math.floor(timeLeft / 60000);
-  const seconds = ((timeLeft % 60000) / 1000).toFixed(0);
+  const minutes = Math.floor(timeLeft / 60000)
+  const seconds = ((timeLeft % 60000) / 1000).toFixed(0)
 
   return (
     <span>
       valid for {minutes ? `${minutes} min` : ""} {seconds.padStart(2, "0")}{" "}
       secs
     </span>
-  );
-};
+  )
+}
 const GenerateCode = () => {
-  const { socket } = useSocket();
-  const { setRoom } = useConnect();
-  const [center, setCenter] = useState<number>(0);
+  const { socket } = useSocket()
+  const { setRoom } = useConnect()
+  const [center, setCenter] = useState<number>(0)
   const [ValidCode, setValidCode] = useState<{
-    token: string;
-    lifetime: number;
-    isValid: boolean;
+    token: string
+    lifetime: number
+    isValid: boolean
   }>({
     token: "",
     lifetime: 0,
     isValid: false,
-  });
+  })
   const handleGetCreateCode = () => {
-    socket?.emit(ConnectionEvents.REQUEST_MANUALCODE);
-  };
+    socket?.emit(ConnectionEvents.REQUEST_MANUALCODE)
+  }
   const handleCreateNewCode = () => {
     socket?.on(ConnectionEvents.UPDATE_MANUALCODE, (pr) => {
-      console.log({ pr });
-      setValidCode(() => pr);
-    });
-  };
+      console.log({ pr })
+      setValidCode(() => pr)
+    })
+  }
   const handleConfirmCode = () => {
     socket?.on(
       ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED,
       (d: RoomType) => {
-        if (d.confirmed) setRoom?.(d);
+        if (d.confirmed) setRoom?.(d)
       }
-    );
-  };
+    )
+  }
   useEffect(() => {
     if (socket) {
-      handleGetCreateCode();
-      handleCreateNewCode();
-      handleConfirmCode();
+      handleGetCreateCode()
+      handleCreateNewCode()
+      handleConfirmCode()
     }
     if (document.body) {
-      setCenter((document.body.clientHeight || 0) / 4);
+      setCenter((document.body.clientHeight || 0) / 4)
     }
     return () => {
-      socket?.off(ConnectionEvents.UPDATE_MANUALCODE);
-      socket?.off(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED);
-    };
-  }, []);
+      socket?.off(ConnectionEvents.UPDATE_MANUALCODE)
+      socket?.off(ConnectionEvents.REQUEST__MANUALCODE_CONFIRMED)
+    }
+  }, [])
   return (
-    <div className='e-card playing' style={{ margin: `${center - 80}px auto` }}>
-      <div className='image'></div>
-      <div className='wave'></div>
-      <div className='wave'></div>
-      <div className='wave'></div>
+    <div className="e-card playing" style={{ margin: `${center - 80}px auto` }}>
+      <div className="image"></div>
+      <div className="wave"></div>
+      <div className="wave"></div>
+      <div className="wave"></div>
 
-      <div className='infotop'>
+      <div className="infotop">
         <svg
-          xmlns='http://www.w3.org/2000/svg'
-          fill='none'
-          viewBox='0 0 24 24'
-          className='icon'
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          className="icon"
         >
           <path
-            fill='currentColor'
-            d='M19.4133 4.89862L14.5863 2.17544C12.9911 1.27485 11.0089 1.27485 9.41368 2.17544L4.58674
+            fill="currentColor"
+            d="M19.4133 4.89862L14.5863 2.17544C12.9911 1.27485 11.0089 1.27485 9.41368 2.17544L4.58674
 4.89862C2.99153 5.7992 2 7.47596 2 9.2763V14.7235C2 16.5238 2.99153 18.2014 4.58674 19.1012L9.41368
   21.8252C10.2079 22.2734 11.105 22.5 12.0046 22.5C12.6952 22.5 13.3874 22.3657 14.0349 22.0954C14.2204
   22.018 14.4059 21.9273 14.5872 21.8252L19.4141 19.1012C19.9765 18.7831 20.4655 18.3728 20.8651
@@ -115,22 +115,22 @@ const GenerateCode = () => {
   15.2665 11.4515 13.921C13.1353 12.4181 15.3198 11.5908 17.6022 11.5908C18.3804 11.5908 19.1477 11.6864
   19.8922 11.8742V14.7235C19.8922 15.2278 19.7589 15.7254 19.5119 16.1662C18.7615 15.3596 17.6806 14.8528
    16.4783 14.8528C14.2136 14.8528 12.3781 16.6466 12.3781 18.8598C12.3781 19.3937 12.4861 19.9021 12.68
-   20.3676C11.9347 20.5316 11.1396 20.4203 10.4684 20.0413H10.4676Z'
+   20.3676C11.9347 20.5316 11.1396 20.4203 10.4684 20.0413H10.4676Z"
           ></path>
         </svg>
         <br />
         Use this URL
         <br />
         on the other device
-        <div className='name'>
+        <div className="name">
           <span
             onClick={() => {
               window.open(
-                `${process.env.REACT_APP_LOCAL_URL}connect`,
+                `${process.env.REACT_APP_LOCAL_URL}/connect`,
                 "_blank"
-              );
+              )
             }}
-            className='connect-link'
+            className="connect-link"
           >
             {process.env.REACT_APP_LOCAL_URL}/connect
           </span>{" "}
@@ -138,16 +138,16 @@ const GenerateCode = () => {
           <span>and enter the following code:</span> <br />
           {ValidCode?.token && (
             <>
-              <div className='pin-numbers'>
+              <div className="pin-numbers">
                 {ValidCode?.token?.split("")?.map((ele) => (
-                  <p className='pin-box'>{ele}</p>
+                  <p className="pin-box">{ele}</p>
                 ))}
               </div>{" "}
               <br />
               <CodeTimer
                 token={ValidCode}
                 callBack={() => {
-                  handleGetCreateCode();
+                  handleGetCreateCode()
                   // getNewCode();
                 }}
               />
@@ -156,24 +156,24 @@ const GenerateCode = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 const Home = (props: Props) => {
-  const { socket } = useSocket();
-  const { room, setIsDisconnect } = useConnect();
+  const { socket } = useSocket()
+  const { room, setIsDisconnect } = useConnect()
   useEffect(() => {
     socket?.on(
       ConnectionEvents.UPDATE_OTHERDEVICE_DISCONNECTED,
       (isDisconnect: { isDisconnect: boolean }) => {
         if (isDisconnect) {
-          setIsDisconnect?.(!!isDisconnect);
+          setIsDisconnect?.(!!isDisconnect)
         }
       }
-    );
-  }, []);
+    )
+  }, [])
   return (
     <>{room?.confirmed ? <Messages roomId={room?.room} /> : <GenerateCode />}</>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
